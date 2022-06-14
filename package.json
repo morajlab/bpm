@@ -1,0 +1,30 @@
+{
+  "name": "bpm",
+  "version": "0.0.1-alpha",
+  "description": "bash package manager",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/morajlab/bpm.git"
+  },
+  "author": {
+    "name": "Morteza Jamali",
+    "email": "mortezajamali4241@gmail.com",
+    "url": "https://moraj.ir"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/morajlab/bpm/issues"
+  },
+  "homepage": "https://github.com/morajlab/bpm#readme",
+  "lint-staged": {
+    "**/*": "prettier -w -u"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.2",
+    "@commitlint/config-conventional": "^17.0.2",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.1",
+    "prettier": "^2.7.0"
+  }
+}
