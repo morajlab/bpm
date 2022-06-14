@@ -329,3 +329,6 @@ build-iPhoneSimulator/
 # .pnp.*
 
 # End of https://www.toptal.com/developers/gitignore/api/node,yarn,ruby,visualstudiocode,jetbrains+all
+
+# bpm
+bash_modules/
