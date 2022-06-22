@@ -2,4 +2,4 @@
 
 bash package manager
 
-> Note: This app currently works for **Moraj Lab** packages
+> Note: This script currently works for **Moraj Lab** packages
