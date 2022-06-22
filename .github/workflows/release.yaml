@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 jobs:
-  create_image:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -14,7 +14,9 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Compress files
+        run: zip bpm-${{ steps.get_version.outputs.VERSION }}.zip ./packages/cli/bpm
       - name: Release archives
         uses: softprops/action-gh-release@v1
         with:
-          files: ./packages/cli/bpm
+          files: ./bpm-${{ steps.get_version.outputs.VERSION }}.zip
