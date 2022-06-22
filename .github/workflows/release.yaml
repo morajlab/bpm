@@ -15,7 +15,9 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Compress files
-        run: zip -D bpm-${{ steps.get_version.outputs.VERSION }}.zip ./packages/cli/bpm
+        run: |
+          cp ./packages/cli/bpm .
+          zip bpm-${{ steps.get_version.outputs.VERSION }}.zip ./bpm
       - name: Release archives
         uses: softprops/action-gh-release@v1
         with:
