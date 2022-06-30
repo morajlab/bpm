@@ -9,16 +9,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Get the version
+        uses: olegtarasov/get-tag@v2.1
+        id: get_version
       - name: Clone repository
         uses: actions/checkout@v3
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Compress files
         run: |
           cp ./packages/cli/bpm .
-          zip bpm-${{ steps.get_version.outputs.VERSION }}.zip ./bpm
+          zip bpm-${{ steps.get_version.outputs.tag }}.zip ./bpm
       - name: Release archives
         uses: softprops/action-gh-release@v1
         with:
-          files: ./bpm-${{ steps.get_version.outputs.VERSION }}.zip
+          files: ./bpm-${{ steps.get_version.outputs.tag }}.zip

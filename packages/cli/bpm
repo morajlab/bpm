@@ -12,6 +12,8 @@ download() {
    )
    shift
   done
+
+  chmod u+x $bin_path -R
 }
 # upload() {}
 
