@@ -1,8 +1,18 @@
 #!/bin/sh
 
 HUSKY_ROOT_PATH=$(dirname "$0")
+ROOT_PATH=$(dirname $HUSKY_ROOT_PATH)
+TEMPLATE_PATH=$ROOT_PATH/.template
+
+BRANCH=$(git branch --show-current)
+
+VERIFICATION_FILE=$TEMPLATE_PATH/$BRANCH/verify.sh
 
 . "$HUSKY_ROOT_PATH/_/husky.sh"
 . "$HUSKY_ROOT_PATH/f/node.sh"
+
+if [ -f "$VERIFICATION_FILE" ]; then
+  . "$VERIFICATION_FILE"
+fi
 
 $node_path/.bin/lint-staged --allow-empty
