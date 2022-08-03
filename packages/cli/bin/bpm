@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# Private functions
+__find_bash_modules() {
+  local root_path=
+  local current_path=$(pwd)
+  local is_root=false
+
+  while ! $is_root; do
+    if [ $current_path = / ]; then
+      echo '>>> ERROR  :: bash modules are not installed.'
+      exit 1
+    fi
+
+    if [ -d "$current_path/bash_modules" ]; then
+      root_path="$current_path/bash_modules"
+      is_root=true
+    fi
+
+    current_path=$(dirname $current_path)
+  done
+
+  echo "$root_path"
+}
+
+# Public functions
+install() {
+  local bin_path=$(pwd)/bash_modules/bin
+
+  shift
+
+  mkdir -p $bin_path
+
+  while [ "$#" -gt 0 ]; do
+   (
+     curl -Lfs -o $bin_path/$1 https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$1/bin/$1 || \
+     echo "ERROR:: bash module '$1' doesn't exist."
+   )
+   shift
+  done
+
+  chmod u+x $bin_path -R
+}
+i() {
+  install "$@"
+}
+
+import() {
+  local bash_modules=$(__find_bash_modules)
+
+  if [ "$?" != "0" ]; then
+    echo "$bash_modules"
+    exit 1
+  fi
+
+  shift
+
+  echo "bash $bash_modules/bin/$1"
+}
+
+if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
+  echo ">>> ERROR  :: argument '$1' is invalid."
+  exit 1
+fi
+
+$1 "$@"
