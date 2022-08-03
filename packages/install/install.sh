@@ -1,15 +1,38 @@
 #!/usr/bin/env bash
 
-ROOT_PATH=$HOME/.bpm
+INSTALL_PATH=$HOME/.bpm
 
-if ! command -v bpm &>/dev/null; then
-  cd $(mktemp -d)
+is_installed() {
+  if command -v bpm &> /dev/null; then
+    exit 0
+  fi
+
+  if [ -d "$INSTALL_PATH" ]; then
+    exit 0
+  fi
+
+  exit 1
+}
+
+install() {
+  local TMP_PATH=$(mktemp -d)
+
+  cd $TMP_PATH
   curl -#LO https://github.com/morajlab/bpm/releases/download/v0.0.1-alpha.4/bpm-v0.0.1-alpha.4.zip
   unzip bpm-v0.0.1-alpha.4.zip
-  mkdir $ROOT_PATH
-  mv bpm $ROOT_PATH/
+  mkdir -p $INSTALL_PATH
+  cp -r bpm $INSTALL_PATH/
+  rm -rf $TMP_PATH
+  cat <<- EOF >> $HOME/.bashrc
 
-  echo 'bpm installed successfully !'
+# bpm
+export PATH=\$PATH:$INSTALL_PATH
+EOF
+}
+
+if $(is_installed); then
+  echo ">>> INFO   :: bpm already installed."
 else
-  echo 'bpm is installed allready !'
+  (install) && \
+  echo ">>> SUCCESS:: bpm installed."
 fi
