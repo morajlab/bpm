@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Compress files
         run: |
-          cp ./packages/cli/bpm .
+          cp ./packages/cli/bin/bpm .
           zip bpm-${{ steps.get_version.outputs.tag }}.zip ./bpm
       - name: Release archives
         uses: softprops/action-gh-release@v1
