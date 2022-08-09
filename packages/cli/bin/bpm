@@ -5,6 +5,8 @@
 # log=$(bpm import log)
 log=echo
 
+GLOBAL_BASH_MODULES_PATH=$HOME/.bash_modules
+
 # Private functions
 __find_bash_modules() {
   local root_path=
@@ -13,7 +15,7 @@ __find_bash_modules() {
 
   while ! $is_root; do
     if [ $current_path = / ]; then
-      $log error 'bash modules are not installed.'
+      echo 1
       exit 1
     fi
 
@@ -38,7 +40,7 @@ install() {
   while [ "$#" -gt 0 ]; do
     case "${1^^}" in
       "--GLOBAL" | "-G")
-        bin_path=$HOME/.bash_modules/bin
+        bin_path=$GLOBAL_BASH_MODULES_PATH/bin
 
         shift
       ;;
@@ -67,16 +69,26 @@ i() {
 }
 
 import() {
-  local bash_modules=$(__find_bash_modules)
+  local bash_modules_paths=()
+  local local_bash_modules=$(__find_bash_modules)
 
-  if [ "$?" != "0" ]; then
-    echo "$bash_modules"
-    exit 1
+  if [ "$local_bash_modules" != "1" ]; then
+    bash_modules_paths+=("$local_bash_modules")
   fi
+
+  bash_modules_paths+=("$GLOBAL_BASH_MODULES_PATH")
 
   shift
 
-  echo "bash $bash_modules/bin/$1"
+  for p in "${bash_modules_paths[@]}"; do
+    if [ -f "$p/bin/$1" ]; then
+      echo "bash $p/bin/$1"
+      exit 0
+    fi
+  done
+
+  echo ">>> ERROR  :: module '$1' is not installed."
+  exit 1
 }
 
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
