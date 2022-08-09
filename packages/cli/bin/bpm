@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Import bash modules
+# TODO: import log module
+# log=$(bpm import log)
+log=echo
+
 # Private functions
 __find_bash_modules() {
   local root_path=
@@ -8,7 +13,7 @@ __find_bash_modules() {
 
   while ! $is_root; do
     if [ $current_path = / ]; then
-      echo '>>> ERROR  :: bash modules are not installed.'
+      $log error 'bash modules are not installed.'
       exit 1
     fi
 
@@ -26,17 +31,33 @@ __find_bash_modules() {
 # Public functions
 install() {
   local bin_path=$(pwd)/bash_modules/bin
+  local packages=()
 
   shift
 
+  while [ "$#" -gt 0 ]; do
+    case "${1^^}" in
+      "--GLOBAL" | "-G")
+        bin_path=$HOME/.bash_modules/bin
+
+        shift
+      ;;
+      *)
+        packages+=("$1")
+
+        shift
+      ;;
+    esac
+  done
+
   mkdir -p $bin_path
 
-  while [ "$#" -gt 0 ]; do
-   (
-     curl -Lfs -o $bin_path/$1 https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$1/bin/$1 || \
-     echo "ERROR:: bash module '$1' doesn't exist."
-   )
-   shift
+  for p in "${packages[@]}"; do
+    (
+     curl -Lfs -o $bin_path/$p \
+     https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/bin/$p || \
+     $log error "bash module '$p' doesn't exist."
+    )
   done
 
   chmod u+x $bin_path -R
@@ -59,7 +80,7 @@ import() {
 }
 
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
-  echo ">>> ERROR  :: argument '$1' is invalid."
+  $log error "argument '$1' is invalid."
   exit 1
 fi
 

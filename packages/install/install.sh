@@ -26,7 +26,7 @@ install() {
   cat <<- EOF >> $HOME/.bashrc
 
 # bpm
-export PATH=\$PATH:$INSTALL_PATH
+export PATH=\$PATH:$INSTALL_PATH:\$HOME/.bash_modules/bin
 EOF
 }
 
