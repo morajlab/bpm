@@ -25,6 +25,19 @@ __find_bash_modules() {
   echo "$root_path"
 }
 
+__bash_module_installed() {
+  if [ -z "$1" ] || \
+     [ -z "$(ls -A $1/bin/ 2> /dev/null)" ]; then
+    echo ">>> ERROR  :: bash modules are not installed."
+    exit 1
+  fi
+
+  if [ ! -z "$2" ] && [ ! -f "$1/bin/$2" ]; then
+    echo ">>> ERROR  : module '$2' is not installed."
+    exit 1
+  fi
+}
+
 # Public functions
 install() {
   local bin_path=$(pwd)/bash_modules/bin
@@ -112,11 +125,7 @@ list() {
     fi
   fi
 
-  if [ -z "$bash_modules" ] || \
-     [ -z "$(ls -A $bash_modules/bin/ 2> /dev/null)" ]; then
-    echo ">>> ERROR  :: bash modules are not installed."
-    exit 1
-  fi
+  __bash_module_installed "$bash_modules"
 
   for p in $(ls -A $bash_modules/bin/); do
     echo "- $p"
@@ -124,6 +133,51 @@ list() {
 }
 l() {
   list "$@"
+}
+
+uninstall() {
+  shift
+
+  local bash_modules=
+  local interactive=0
+  local module="$1"
+
+  shift
+
+  while [ "$#" -gt 0 ]; do
+    case "${1^^}" in
+      "--GLOBAL" | "-G")
+        bash_modules=$GLOBAL_BASH_MODULES_PATH
+
+        shift
+      ;;
+      "--YES" | "-Y")
+        interactive=1
+
+        shift
+      ;;
+      *)
+        shift
+      ;;
+    esac
+  done
+
+  if [ -z "$bash_modules" ]; then
+    local local_bash_modules=$(__find_bash_modules)
+
+    if [ "$local_bash_modules" != "1" ]; then
+      bash_modules=$local_bash_modules
+    fi
+  fi
+
+  __bash_module_installed "$bash_modules" "$module"
+
+  rm -rf $bash_modules/bin/$module
+
+  echo ">>> SUCCESS: module '$module' uninstalled."
+}
+u() {
+  uninstall "$@"
 }
 
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
