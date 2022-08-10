@@ -18,8 +18,8 @@ install() {
   local TMP_PATH=$(mktemp -d)
 
   cd $TMP_PATH
-  curl -#LO https://github.com/morajlab/bpm/releases/download/v0.0.1-alpha.5/bpm-v0.0.1-alpha.5.zip
-  unzip bpm-v0.0.1-alpha.5.zip
+  curl -#LO https://github.com/morajlab/bpm/releases/download/v0.0.1-alpha.6/bpm-v0.0.1-alpha.6.zip
+  unzip bpm-v0.0.1-alpha.6.zip
   mkdir -p $INSTALL_PATH
   cp -r bpm $INSTALL_PATH/
   rm -rf $TMP_PATH
