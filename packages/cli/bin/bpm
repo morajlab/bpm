@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-# Import bash modules
-# TODO: import log module
-# log=$(bpm import log)
-log=echo
-
 GLOBAL_BASH_MODULES_PATH=$HOME/.bash_modules
 
 # Private functions
@@ -58,7 +53,7 @@ install() {
     (
      curl -Lfs -o $bin_path/$p \
      https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/bin/$p || \
-     $log error "bash module '$p' doesn't exist."
+     echo ">>> ERROR  :: bash module '$p' doesn't exist."
     )
   done
 
@@ -91,8 +86,48 @@ import() {
   exit 1
 }
 
+list() {
+  local bash_modules=
+
+  shift
+
+  while [ "$#" -gt 0 ]; do
+    case "${1^^}" in
+      "--GLOBAL" | "-G")
+        bash_modules=$GLOBAL_BASH_MODULES_PATH
+
+        shift
+      ;;
+      *)
+        shift
+      ;;
+    esac
+  done
+
+  if [ -z "$bash_modules" ]; then
+    local local_bash_modules=$(__find_bash_modules)
+
+    if [ "$local_bash_modules" != "1" ]; then
+      bash_modules=$local_bash_modules
+    fi
+  fi
+
+  if [ -z "$bash_modules" ] || \
+     [ -z "$(ls -A $bash_modules/bin/ 2> /dev/null)" ]; then
+    echo ">>> ERROR  :: bash modules are not installed."
+    exit 1
+  fi
+
+  for p in $(ls -A $bash_modules/bin/); do
+    echo "- $p"
+  done
+}
+l() {
+  list "$@"
+}
+
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
-  $log error "argument '$1' is invalid."
+  echo ">>> ERROR  :: argument '$1' is invalid."
   exit 1
 fi
 
