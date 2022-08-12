@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
 GLOBAL_BASH_MODULES_PATH=$HOME/.bash_modules
+declare -A PACKAGE_INFO_SCHEMA=(
+  # ["KEY"]='(["type"]="<dict|array|string>" ["required"]=<false|true>)'
+  ["NAME"]='(["type"]="string" ["required"]=true)'
+  ["VERSION"]='(["type"]="string" ["required"]=true)'
+  ["DESCRIPTION"]='(["type"]="string" ["required"]=false)'
+  ["KEYWORDS"]='(["type"]="array" ["required"]=false)'
+  ["DEPENDENCIES"]='(["type"]="dict" ["required"]=false)'
+  ["DEVDEPENDENCIES"]='(["type"]="dict" ["required"]=false)'
+  ["LICENSE"]='(["type"]="string" ["required"]=false)'
+  ["AUTHOR"]='(["type"]="dict" ["required"]=false)'
+  ["REPOSITORY"]='(["type"]="string" ["required"]=false)'
+)
 
 # Private functions
 __find_bash_modules() {
@@ -38,6 +50,44 @@ __bash_module_installed() {
   fi
 }
 
+__normalize_package_info() {
+  local package_info=${1//\[/\\\[}
+  package_info=${package_info//\]/\\\]}
+
+  echo "$package_info"
+}
+
+__validate_package_info() {
+  local value=
+
+  eval "$1"
+
+  for key in "${!PACKAGE_INFO_SCHEMA[@]}"; do
+    # echo "$key => " "${!key}"
+    declare -A schema_key_dict="${PACKAGE_INFO_SCHEMA[$key]}"
+
+    case "${schema_key_dict[type]^^}" in
+      "STRING")
+        value="${!key}"
+        echo "$value"
+      ;;
+      "ARRAY")
+        printf -v value 'echo "${%s[@]}"' "$key"
+        eval "$value"
+      ;;
+      "DICT")
+        echo ${AUTHOR["name"]}
+        # local art='declare -A haha=(%s)'
+        # echo ${art//\%s/${AUTHOR[@]}}
+        # eval "$lala"
+        # echo "${haha[@]}"
+        # printf -v value 'declare -A dict=(${%s[@]}) && echo "$dict"' "$key"
+        # eval "$value"
+      ;;
+    esac
+  done
+}
+
 # Public functions
 install() {
   local bin_path=$(pwd)/bash_modules/bin
@@ -63,14 +113,38 @@ install() {
   mkdir -p $bin_path
 
   for p in "${packages[@]}"; do
-    (
-     curl -Lfs -o $bin_path/$p \
-     https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/bin/$p || \
-     echo ">>> ERROR  :: bash module '$p' doesn't exist."
-    )
+    local package_sh_url="https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/package.sh"
+    local package_info="$(curl -fsSL $package_sh_url 2> /dev/null)"
+
+    if [ -z "$package_info" ]; then
+      echo ">>> ERROR  :: bash module '$p' doesn't exist."
+      exit 1
+    fi
+
+    package_info=$(__normalize_package_info "$package_info")
+
+    __validate_package_info "$package_info"
+
+    # while IFS= read -r line; do
+    #   echo $line
+    # done < <(
+    #   eval "$package_info"
+
+    #   for key in "${!PACKAGE_INFO_SCHEMA[@]}"; do
+    #     # echo "$key => " "${!key}"
+    #     schema_key_dict="${PACKAGE_INFO_SCHEMA[$key]}"
+    #     echo ${schema_key_dict["type"]}
+    #   done
+    # )
+
+    # (
+    #  curl -Lfs -o $bin_path/$p \
+    #  https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/bin/$p || \
+    #  echo ">>> ERROR  :: bash module '$p' doesn't exist."
+    # )
   done
 
-  chmod u+x $bin_path -R
+  # chmod u+x $bin_path -R
 }
 i() {
   install "$@"
