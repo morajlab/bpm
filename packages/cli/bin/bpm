@@ -58,33 +58,60 @@ __normalize_package_info() {
 }
 
 __validate_package_info() {
-  local value=
-
   eval "$1"
 
   for key in "${!PACKAGE_INFO_SCHEMA[@]}"; do
-    # echo "$key => " "${!key}"
     declare -A schema_key_dict="${PACKAGE_INFO_SCHEMA[$key]}"
+    local value=
+    local errors=()
 
     case "${schema_key_dict[type]^^}" in
       "STRING")
         value="${!key}"
-        echo "$value"
+
+        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
+           [ -z "$value" ]; then
+          errors+=("value for key '$key' is required.")
+        fi
       ;;
       "ARRAY")
-        printf -v value 'echo "${%s[@]}"' "$key"
-        eval "$value"
+        printf -v arrayeval 'value=$(echo "${%s[@]}")' "$key"
+        eval "$arrayeval"
+
+        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
+           [ -z "$value" ]; then
+          errors+=("value for key '$key' is required.")
+        fi
       ;;
       "DICT")
-        echo ${AUTHOR["name"]}
-        # local art='declare -A haha=(%s)'
-        # echo ${art//\%s/${AUTHOR[@]}}
-        # eval "$lala"
-        # echo "${haha[@]}"
-        # printf -v value 'declare -A dict=(${%s[@]}) && echo "$dict"' "$key"
-        # eval "$value"
+        declare -A tdict
+        local dicteval=$(cat <<- 'EOF'
+for i in "${%s[@]}"; do
+  local _key=$(echo "$i" | cut -d '=' -f 1)
+  local _value=$(echo "$i" | cut -d '=' -f 2)
+
+  eval "tdict$_key=\"$_value\""
+done
+EOF
+        )
+        dicteval=${dicteval//\%s/"$key"}
+
+        eval "$dicteval"
+
+        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
+           [ -z "$tdict" ]; then
+          errors+=("value for key '$key' is required.")
+        fi
       ;;
     esac
+
+    if [ ! -z "$errors" ]; then
+      for e in "${errors[@]}"; do
+        echo ">>> ERROR  :: $e"
+      done
+
+      exit 1
+    fi
   done
 }
 
