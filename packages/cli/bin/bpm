@@ -2,16 +2,18 @@
 
 GLOBAL_BASH_MODULES_PATH=$HOME/.bash_modules
 declare -A PACKAGE_INFO_SCHEMA=(
-  # ["KEY"]='(["type"]="<dict|array|string>" ["required"]=<false|true>)'
-  ["NAME"]='(["type"]="string" ["required"]=true)'
-  ["VERSION"]='(["type"]="string" ["required"]=true)'
-  ["DESCRIPTION"]='(["type"]="string" ["required"]=false)'
-  ["KEYWORDS"]='(["type"]="array" ["required"]=false)'
-  ["DEPENDENCIES"]='(["type"]="dict" ["required"]=false)'
-  ["DEVDEPENDENCIES"]='(["type"]="dict" ["required"]=false)'
-  ["LICENSE"]='(["type"]="string" ["required"]=false)'
-  ["AUTHOR"]='(["type"]="dict" ["required"]=false)'
-  ["REPOSITORY"]='(["type"]="string" ["required"]=false)'
+  # ["KEY"]='(["type"]="<dict|array|string>" ["required"]=<false|true> ["valid_fn"]="<function_name>")'
+  ["NAME"]='(["type"]="string" ["required"]=true ["valid_fn"]="__validate_package_name")'
+  ["VERSION"]='(["type"]="string" ["required"]=true ["valid_fn"]="__validate_package_version")'
+  ["DESCRIPTION"]='(["type"]="string" ["required"]=false ["valid_fn"]="__validate_package_description")'
+  ["KEYWORDS"]='(["type"]="array" ["required"]=false ["valid_fn"]="__validate_package_keywords")'
+  ["DEPENDENCIES"]='(["type"]="dict" ["required"]=false ["valid_fn"]="__validate_package_deps")'
+  ["DEVDEPENDENCIES"]='(["type"]="dict" ["required"]=false ["valid_fn"]="__validate_package_devdeps")'
+  ["LICENSE"]='(["type"]="string" ["required"]=false ["valid_fn"]="__validate_package_license")'
+  ["AUTHOR"]='(["type"]="dict" ["required"]=false ["valid_fn"]="__validate_package_author")'
+  ["REPOSITORY"]='(["type"]="string" ["required"]=false ["valid_fn"]="__validate_package_repository")'
+  ["SOURCE"]='(["type"]="array" ["required"]=false ["valid_fn"]="__validate_package_source")'
+  ["BIN"]='(["type"]="string" ["required"]=false ["valid_fn"]="__validate_package_bin")'
 )
 
 # Private functions
@@ -57,31 +59,71 @@ __normalize_package_info() {
   echo "$package_info"
 }
 
+# Package info validator functions
+__validate_package_name() {
+  echo "Name must only contain alpanumerical characters"
+  exit 1
+}
+
+__validate_package_version() {
+  exit 0
+}
+
+__validate_package_description() {
+  exit 0
+}
+
+__validate_package_keywords() {
+  exit 0
+}
+
+__validate_package_deps() {
+  exit 0
+}
+
+__validate_package_devdeps() {
+  exit 0
+}
+
+__validate_package_license() {
+  exit 0
+}
+
+__validate_package_author() {
+  exit 0
+}
+
+__validate_package_repository() {
+  exit 0
+}
+
+__validate_package_source() {
+  exit 0
+}
+
+__validate_package_bin() {
+  echo "Bin path is invalid."
+  exit 1
+}
+
 __validate_package_info() {
+  local errors=()
+
   eval "$1"
 
   for key in "${!PACKAGE_INFO_SCHEMA[@]}"; do
     declare -A schema_key_dict="${PACKAGE_INFO_SCHEMA[$key]}"
+    local return_val=
     local value=
-    local errors=()
 
     case "${schema_key_dict[type]^^}" in
       "STRING")
-        value="${!key}"
-
-        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
-           [ -z "$value" ]; then
-          errors+=("value for key '$key' is required.")
-        fi
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "${!key}")
       ;;
       "ARRAY")
         printf -v arrayeval 'value=$(echo "${%s[@]}")' "$key"
         eval "$arrayeval"
-
-        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
-           [ -z "$value" ]; then
-          errors+=("value for key '$key' is required.")
-        fi
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$value")
       ;;
       "DICT")
         declare -A tdict
@@ -95,24 +137,23 @@ done
 EOF
         )
         dicteval=${dicteval//\%s/"$key"}
-
         eval "$dicteval"
-
-        if [ "${schema_key_dict[required]^^}" == "TRUE" ] && \
-           [ -z "$tdict" ]; then
-          errors+=("value for key '$key' is required.")
-        fi
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$tdict")
       ;;
     esac
 
-    if [ ! -z "$errors" ]; then
-      for e in "${errors[@]}"; do
-        echo ">>> ERROR  :: $e"
-      done
-
-      exit 1
+    if [ ! -z "$return_val" ]; then
+      errors+=("$return_val")
     fi
   done
+
+  if [ ! -z "$errors" ]; then
+    for e in "${errors[@]}"; do
+      echo ">>> ERROR  :: $e"
+    done
+
+    exit 1
+  fi
 }
 
 # Public functions
