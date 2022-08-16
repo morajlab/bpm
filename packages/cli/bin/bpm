@@ -76,7 +76,12 @@ __validate_package_name() {
 }
 
 __validate_package_version() {
-  exit 0
+  local result=$($vv "$2")
+
+  if [ "$result" != "0" ]; then
+    echo "Version number '$2' is invalid"
+    exit 1
+  fi
 }
 
 __validate_package_description() {
@@ -112,8 +117,7 @@ __validate_package_source() {
 }
 
 __validate_package_bin() {
-  echo "Bin path is invalid."
-  exit 1
+  exit 0
 }
 
 __validate_package_info() {
@@ -247,7 +251,7 @@ import() {
     fi
   done
 
-  $log error "module '$1' is not installed."
+  echo "module '$1' is not installed."
   exit 1
 }
 
@@ -335,8 +339,18 @@ u() {
 # Import bash modules
 _log=$(import _ log)
 
-if [ "$?" == "0" ]; then
-  log="$_log"
+if [ "$?" != "0" ]; then
+  $log ">>> $_log"
+  exit 1
+fi
+
+log="$_log"
+
+vv=$(import _ vv)
+
+if [ "$?" != "0" ]; then
+  $log error "$vv"
+  exit 1
 fi
 
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
