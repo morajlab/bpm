@@ -61,8 +61,13 @@ __normalize_package_info() {
 
 # Package info validator functions
 __validate_package_name() {
-  echo "Name must only contain alpanumerical characters"
-  exit 1
+  local REGEX='^([a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$'
+  local match_result=$(echo $2 | grep -P -q $REGEX)
+
+  if [[ $? != 0 ]]; then
+    echo "Package name '$2' is invalid"
+    exit 1
+  fi
 }
 
 __validate_package_version() {

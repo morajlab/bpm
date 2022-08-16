@@ -3,6 +3,8 @@ DESCRIPTION="Bash package manager"
 VERSION="0.0.1-alpha.6"
 BIN="packages/cli/bin"
 DEPENDENCIES=(
+  ["morajlab/log"]="*"
+  ["morajlab/vv"]="*"
   ["jq"]=("apt" "*")
 )
 LICENSE="MIT"
