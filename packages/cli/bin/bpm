@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Define bash modules here
+log=echo
+
 GLOBAL_BASH_MODULES_PATH=$HOME/.bash_modules
 declare -A PACKAGE_INFO_SCHEMA=(
   # ["KEY"]='(["type"]="<dict|array|string>" ["required"]=<false|true> ["valid_fn"]="<function_name>")'
@@ -15,6 +18,8 @@ declare -A PACKAGE_INFO_SCHEMA=(
   ["SOURCE"]='(["type"]="array" ["required"]=false ["valid_fn"]="__validate_package_source")'
   ["BIN"]='(["type"]="string" ["required"]=false ["valid_fn"]="__validate_package_bin")'
 )
+
+# Define functions at top of file
 
 # Private functions
 __find_bash_modules() {
@@ -42,12 +47,12 @@ __find_bash_modules() {
 __bash_module_installed() {
   if [ -z "$1" ] || \
      [ -z "$(ls -A $1/bin/ 2> /dev/null)" ]; then
-    echo ">>> ERROR  :: bash modules are not installed."
+    $log error "bash modules are not installed."
     exit 1
   fi
 
   if [ ! -z "$2" ] && [ ! -f "$1/bin/$2" ]; then
-    echo ">>> ERROR  : module '$2' is not installed."
+    $log error "module '$2' is not installed."
     exit 1
   fi
 }
@@ -154,7 +159,7 @@ EOF
 
   if [ ! -z "$errors" ]; then
     for e in "${errors[@]}"; do
-      echo ">>> ERROR  :: $e"
+      $log error "$e"
     done
 
     exit 1
@@ -190,7 +195,7 @@ install() {
     local package_info="$(curl -fsSL $package_sh_url 2> /dev/null)"
 
     if [ -z "$package_info" ]; then
-      echo ">>> ERROR  :: bash module '$p' doesn't exist."
+      $log error "bash module '$p' doesn't exist."
       exit 1
     fi
 
@@ -242,7 +247,7 @@ import() {
     fi
   done
 
-  echo ">>> ERROR  :: module '$1' is not installed."
+  $log error "module '$1' is not installed."
   exit 1
 }
 
@@ -321,14 +326,21 @@ uninstall() {
 
   rm -rf $bash_modules/bin/$module
 
-  echo ">>> SUCCESS: module '$module' uninstalled."
+  $log success "module '$module' uninstalled."
 }
 u() {
   uninstall "$@"
 }
 
+# Import bash modules
+_log=$(import _ log)
+
+if [ "$?" == "0" ]; then
+  log="$_log"
+fi
+
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
-  echo ">>> ERROR  :: argument '$1' is invalid."
+  $log error "argument '$1' is invalid."
   exit 1
 fi
 
