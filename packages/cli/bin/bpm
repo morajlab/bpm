@@ -113,7 +113,23 @@ __validate_package_repository() {
 }
 
 __validate_package_source() {
-  exit 0
+  local package="$3"
+  local source_paths="$2"
+  local error_code=0
+
+  for p in ${source_paths[@]}; do
+    local api_url="https://api.github.com/repos/morajlab/bash-scripts/contents/packages/$package/$p"
+    local response=$(curl -s -w '#{"http_code": %{response_code}}#' $api_url)
+    local content=$(echo "$response" | cut -d '#' -f 1)
+    local code=$(echo "$response" | grep -Eoi "#\{(.+)\}#" | cut -d '#' -f 2 | jq '.http_code')
+
+    if [ "$code" != "200" ]; then
+      echo "Source path '$p' doesn't exist."
+      error_code=1
+    fi
+  done
+
+  exit $error_code
 }
 
 __validate_package_bin() {
@@ -121,6 +137,7 @@ __validate_package_bin() {
 }
 
 __validate_package_info() {
+  local package="$2"
   local errors=()
 
   eval "$1"
@@ -132,12 +149,12 @@ __validate_package_info() {
 
     case "${schema_key_dict[type]^^}" in
       "STRING")
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "${!key}")
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "${!key}" "$package")
       ;;
       "ARRAY")
         printf -v arrayeval 'value=$(echo "${%s[@]}")' "$key"
         eval "$arrayeval"
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$value")
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$value" "$package")
       ;;
       "DICT")
         declare -A tdict
@@ -152,7 +169,7 @@ EOF
         )
         dicteval=${dicteval//\%s/"$key"}
         eval "$dicteval"
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$tdict")
+        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$tdict" "$package")
       ;;
     esac
 
@@ -196,6 +213,11 @@ install() {
 
   for p in "${packages[@]}"; do
     local package_sh_url="https://raw.githubusercontent.com/morajlab/bash-scripts/master/packages/$p/package.sh"
+
+    if [ "$DEV" == "1" ]; then
+      package_sh_url="http://0.0.0.0:8000/$p/package.sh"
+    fi
+
     local package_info="$(curl -fsSL $package_sh_url 2> /dev/null)"
 
     if [ -z "$package_info" ]; then
@@ -205,7 +227,7 @@ install() {
 
     package_info=$(__normalize_package_info "$package_info")
 
-    __validate_package_info "$package_info"
+    __validate_package_info "$package_info" "$p"
 
     # while IFS= read -r line; do
     #   echo $line
