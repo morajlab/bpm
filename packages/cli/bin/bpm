@@ -64,6 +64,18 @@ __normalize_package_info() {
   echo "$package_info"
 }
 
+# Github REST-API
+__gh_get_repo_content() {
+  local repo="$1"
+  local path="$2"
+  local api_url="https://api.github.com/repos/$repo/contents/$path"
+  local response=$(curl -s -w '#{"http_code": %{response_code}}#' $api_url)
+  local content=$(echo "$response" | cut -d '#' -f 1)
+  local code=$(echo "$response" | grep -Eoi "#\{(.+)\}#" | cut -d '#' -f 2 | jq '.http_code')
+
+  echo "(['content']='$content' ['code']=$code)"
+}
+
 # Package info validator functions
 __validate_package_name() {
   local REGEX='^([a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$'
@@ -118,12 +130,9 @@ __validate_package_source() {
   local error_code=0
 
   for p in ${source_paths[@]}; do
-    local api_url="https://api.github.com/repos/morajlab/bash-scripts/contents/packages/$package/$p"
-    local response=$(curl -s -w '#{"http_code": %{response_code}}#' $api_url)
-    local content=$(echo "$response" | cut -d '#' -f 1)
-    local code=$(echo "$response" | grep -Eoi "#\{(.+)\}#" | cut -d '#' -f 2 | jq '.http_code')
+    declare -A result="$(__gh_get_repo_content morajlab/bash-scripts packages/$package/$p)"
 
-    if [ "$code" != "200" ]; then
+    if [ "${result[code]}" != "200" ]; then
       echo "Source path '$p' doesn't exist."
       error_code=1
     fi
@@ -133,7 +142,22 @@ __validate_package_source() {
 }
 
 __validate_package_bin() {
-  exit 0
+  local bin_path="$2"
+
+  if [ -z "$bin_path" ]; then
+    exit 0
+  fi
+
+  local package="$3"
+  local error_code=0
+  declare -A result="$(__gh_get_repo_content morajlab/bash-scripts packages/$package/$bin_path)"
+
+  if [ "${result[code]}" != "200" ]; then
+    echo "Bin path '$p' doesn't exist."
+    error_code=1
+  fi
+
+  exit $error_code
 }
 
 __validate_package_info() {
@@ -191,8 +215,6 @@ EOF
 install() {
   local bin_path=$(pwd)/bash_modules/bin
   local packages=()
-
-  shift
 
   while [ "$#" -gt 0 ]; do
     case "${1^^}" in
@@ -264,8 +286,6 @@ import() {
 
   bash_modules_paths+=("$GLOBAL_BASH_MODULES_PATH")
 
-  shift
-
   for p in "${bash_modules_paths[@]}"; do
     if [ -f "$p/bin/$1" ]; then
       echo "bash $p/bin/$1"
@@ -279,8 +299,6 @@ import() {
 
 list() {
   local bash_modules=
-
-  shift
 
   while [ "$#" -gt 0 ]; do
     case "${1^^}" in
@@ -314,8 +332,6 @@ l() {
 }
 
 uninstall() {
-  shift
-
   local bash_modules=
   local interactive=0
   local module="$1"
@@ -359,7 +375,7 @@ u() {
 }
 
 # Import bash modules
-_log=$(import _ log)
+_log=$(import log)
 
 if [ "$?" != "0" ]; then
   $log ">>> $_log"
@@ -368,7 +384,7 @@ fi
 
 log="$_log"
 
-vv=$(import _ vv)
+vv=$(import vv)
 
 if [ "$?" != "0" ]; then
   $log error "$vv"
@@ -380,4 +396,25 @@ if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
   exit 1
 fi
 
-$1 "$@"
+FUNC_NAME=$1
+
+shift
+
+args=()
+
+while [ "$#" -gt 0 ]; do
+  case "${1^^}" in
+    "--VERBOSE" | "-V")
+      set -x
+
+      shift
+    ;;
+    *)
+      args+=("$1")
+
+      shift
+    ;;
+  esac
+done
+
+$FUNC_NAME "${args[@]}"
