@@ -105,7 +105,26 @@ __validate_package_keywords() {
 }
 
 __validate_package_deps() {
-  exit 0
+  declare -A deps
+  local organization
+  local repo
+  local error_code=0
+
+  eval "deps="${2#*=}
+
+  for d in "${!deps[@]}"; do
+    organization=$(echo $d | cut -d '/' -f 1)
+    repo=$(echo $d | cut -d '/' -f 2)
+    declare -A result="$(__gh_get_repo_content \
+    $organization/bash-scripts packages/$repo/package.sh)"
+
+    if [ "${result[code]}" != "200" ]; then
+      echo "Bash module '$d' doesn't exist."
+      error_code=1
+    fi
+  done
+
+  exit $error_code
 }
 
 __validate_package_devdeps() {
@@ -130,7 +149,8 @@ __validate_package_source() {
   local error_code=0
 
   for p in ${source_paths[@]}; do
-    declare -A result="$(__gh_get_repo_content morajlab/bash-scripts packages/$package/$p)"
+    declare -A result="$(__gh_get_repo_content \
+    morajlab/bash-scripts packages/$package/$p)"
 
     if [ "${result[code]}" != "200" ]; then
       echo "Source path '$p' doesn't exist."
@@ -150,7 +170,8 @@ __validate_package_bin() {
 
   local package="$3"
   local error_code=0
-  declare -A result="$(__gh_get_repo_content morajlab/bash-scripts packages/$package/$bin_path)"
+  declare -A result="$(__gh_get_repo_content \
+  morajlab/bash-scripts packages/$package/$bin_path)"
 
   if [ "${result[code]}" != "200" ]; then
     echo "Bin path '$p' doesn't exist."
@@ -173,12 +194,14 @@ __validate_package_info() {
 
     case "${schema_key_dict[type]^^}" in
       "STRING")
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "${!key}" "$package")
+        return_val=$("${schema_key_dict[valid_fn]}" \
+        "${schema_key_dict[required]^^}" "${!key}" "$package")
       ;;
       "ARRAY")
         printf -v arrayeval 'value=$(echo "${%s[@]}")' "$key"
         eval "$arrayeval"
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$value" "$package")
+        return_val=$("${schema_key_dict[valid_fn]}" \
+        "${schema_key_dict[required]^^}" "$value" "$package")
       ;;
       "DICT")
         declare -A tdict
@@ -193,7 +216,8 @@ EOF
         )
         dicteval=${dicteval//\%s/"$key"}
         eval "$dicteval"
-        return_val=$("${schema_key_dict[valid_fn]}" "${schema_key_dict[required]^^}" "$tdict" "$package")
+        return_val=$("${schema_key_dict[valid_fn]}" \
+        "${schema_key_dict[required]^^}" "$(declare -p tdict)" "$package")
       ;;
     esac
 
