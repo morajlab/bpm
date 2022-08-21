@@ -79,7 +79,8 @@ __gh_get_repo_content() {
 # Package info validator functions
 __validate_package_name() {
   local REGEX='^([a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$'
-  local match_result=$(echo $2 | grep -P -q $REGEX)
+
+  echo $2 | grep -P -q $REGEX
 
   if [[ $? != 0 ]]; then
     echo "Package name '$2' is invalid"
@@ -101,7 +102,18 @@ __validate_package_description() {
 }
 
 __validate_package_keywords() {
-  exit 0
+  local REGEX='^([A-Za-z]|\d)+([-_]?)*([A-Za-z]|\d)+$'
+  local error_code=0
+
+  for k in $2; do
+    echo $k | grep -P -q $REGEX
+
+    if [[ $? != 0 ]]; then
+      echo "Keyword '$k' is invalid"
+    fi
+  done
+
+  exit $error_code
 }
 
 __validate_package_deps() {
@@ -204,7 +216,7 @@ __validate_package_info() {
         "${schema_key_dict[required]^^}" "$value" "$package")
       ;;
       "DICT")
-        declare -A tdict
+        declare -A tdict=()
         local dicteval=$(cat <<- 'EOF'
 for i in "${%s[@]}"; do
   local _key=$(echo "$i" | cut -d '=' -f 1)
