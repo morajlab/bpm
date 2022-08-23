@@ -61,6 +61,7 @@ EOF
   if [ "$SILENT" == "0" ]; then
     LOG_FILE_PATH=$(mktemp)
 
+    echo "LOG_FILE_PATH=$LOG_FILE_PATH" >> $META_FILE_PATH
     _clone_command="$_clone_command >> $LOG_FILE_PATH 2>&1"
     _serve_command="$_serve_command >> $LOG_FILE_PATH 2>&1 &"
   fi
@@ -75,40 +76,82 @@ EOF
 }
 
 stop() {
-  local PID=$(__get_meta_value PID)
+  local pid=$(__get_meta_value PID)
+  local _TMP_PATH=
+  local exit_code=0
 
-  if [ "$PID" == "1" ]; then
-    PID=
+  if [ "$pid" == "1" ]; then
+    pid=
+    _TMP_PATH=1
   fi
 
-  if [ ! -z "$PID" ]; then
-    ps -q $PID -o comm= &> /dev/null
+  if [ ! -z "$pid" ]; then
+    ps -q $pid -o comm= &> /dev/null
 
     if [ "$?" != "0" ]; then
-      PID=
+      pid=
     fi
   fi
 
-  if [ -z "$PID" ]; then
-    echo ">> ERROR  :: server already stopped."
-    exit 1
+  if [ -z "$pid" ]; then
+    exit_code=1
+  else
+    kill $pid
   fi
 
-  kill $PID
+  if [ -z "$_TMP_PATH" ]; then
+    _TMP_PATH=$(__get_meta_value TMP_PATH)
+    rm -rf $_TMP_PATH
+  fi
 
-  local _TMP_PATH=$(__get_meta_value TMP_PATH)
-
-  rm -rf $_TMP_PATH $META_FILE_PATH
-
-  echo "HTTP server stopped."
+  if [ "$exit_code" != "0" ]; then
+    echo ">> ERROR  :: server already stopped."
+    exit $exit_code
+  else
+    echo "HTTP server stopped."
+  fi
 }
 
 status() {
-  :
+  local pid=$(__get_meta_value PID)
+  local status="running"
+
+  if [ "$pid" == "1" ]; then
+    echo ">> ERROR  :: server meta file doesn't exist."
+    exit 1
+  fi
+
+  if [ ! -z "$pid" ]; then
+    ps -q $pid -o comm= &> /dev/null
+
+    if [ "$?" != "0" ]; then
+      pid=
+    fi
+  fi
+
+  if [ -z "$pid" ]; then
+    status="stopped"
+  fi
+
+  local _TMP_PATH=$(__get_meta_value TMP_PATH)
+  local _PORT=$(__get_meta_value PORT)
+  local output=$(cat <<- EOF
+Host|Port|Root|Status
+0.0.0.0|$_PORT|$_TMP_PATH|$status
+EOF
+)
+  echo "$output" | column -t -s '|'
 }
 
 log() {
-  :
+  local log_file_path=$(__get_meta_value LOG_FILE_PATH)
+
+  if [ "$log_file_path" == "1" ]; then
+    echo ">> ERROR  :: server meta file doesn't exist."
+    exit 1
+  fi
+
+  cat $log_file_path
 }
 
 if [[ $1 = __* ]] || [ "$(type -t $1)" != 'function' ]; then
