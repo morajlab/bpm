@@ -1,12 +1,16 @@
 #include "cli.h"
 
-int install() {
+int install(int argc, char **argv) {
   printf("install() method\n");
+
+  while (argc--) {
+    printf("%s\n", argv[argc]);
+  }
 
   return 0;
 }
 
-int defaultCommand() {
+int defaultCommand(int argc, char **argv) {
   printf("%s\n", ">> WARNING:: This is default command.");
 
   return 0;
@@ -34,5 +38,5 @@ int main(int argc, char **argv) {
 
   cmdcallbackfunc cmd_func = getCommandFunction(argv[1]);
 
-  return (*cmd_func)();
+  return (*cmd_func)(argc, argv);
 }
