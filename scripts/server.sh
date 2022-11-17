@@ -135,12 +135,10 @@ status() {
 
   local _TMP_PATH=$(__get_meta_value TMP_PATH)
   local _PORT=$(__get_meta_value PORT)
-  local output=$(cat <<- EOF
-Host|Port|Root|Status
-0.0.0.0|$_PORT|$_TMP_PATH|$status
-EOF
-)
-  echo "$output" | column -t -s '|'
+
+  echo "0.0.0.0|$_PORT|$_TMP_PATH|$status" | \
+    column -t -s '|' \-N 'Host,Port,Root,Status' \
+    -T 'Root' -W 'Root' -o ' | '
 }
 
 log() {
