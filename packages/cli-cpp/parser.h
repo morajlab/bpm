@@ -1,19 +1,31 @@
-#include <stdio.h>
+#include "file.h"
+#include <string.h>
+#include <stdbool.h>
 
-typedef version_s char *;
+#define KEY_VALUE_TOKEN "="
 
-struct PackageAuthorSchema {
+struct Lines {
+  char *value;
+  struct Lines *next;
+}
+
+typedef struct {
+  char *key;
+  char *value;
+} LineStruct;
+
+typedef struct {
   char *name;
   char *email;
   char *url;
-}
+} PackageAuthorSchema;
 
-struct PackageDependencySchema {
+typedef struct {
   char *name;
-  version_s version;
-}
+  char *version;
+} PackageDependencySchema;
 
-struct PackageSchema {
+typedef struct {
   char *name;
   char *license;
   char *description;
@@ -29,12 +41,16 @@ struct PackageSchema {
           char *key[];
   */
   char *key[20];
-  version_s version;
+  char *version;
   /*
     TODO: Use dynamic sized dependencies array:
           struct PackageDependencySchema dependencies[];
   */
-  struct PackageDependencySchema dependencies;
-  struct PackageDependencySchema dev_dependencies;
-  struct PackageAuthorSchema author;
-};
+  PackageDependencySchema dependencies;
+  PackageDependencySchema dev_dependencies;
+  PackageAuthorSchema author;
+} PackageSchema;
+
+LineStruct get_line_struct(char *);
+char *get_line(char *);
+PackageSchema parse(char *);
