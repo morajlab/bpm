@@ -1,0 +1,3 @@
+[submodule "packages/cli-cpp/libmjl-cpp"]
+	path = packages/cli-cpp/libmjl-cpp
+	url = https://github.com/morajlab/libmjl-cpp.git
