@@ -1,13 +1,11 @@
-#include "file.h"
 #include <string.h>
 #include <stdbool.h>
+#include "libmjl-cpp/src/create_chain/create_chain.h"
+#include "libmjl-cpp/src/get_file_content/get_file_content.h"
 
 #define KEY_VALUE_TOKEN "="
 
-struct Lines {
-  char *value;
-  struct Lines *next;
-}
+struct Chain *lines_chain_head = NULL;
 
 typedef struct {
   char *key;
@@ -52,5 +50,6 @@ typedef struct {
 } PackageSchema;
 
 LineStruct get_line_struct(char *);
-char *get_line(char *);
 PackageSchema parse(char *);
+char *get_line(struct Chain *);
+struct Chain *create_content_chain(char *);
