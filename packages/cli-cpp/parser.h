@@ -5,7 +5,7 @@
 
 #define KEY_VALUE_TOKEN "="
 
-struct Chain *lines_chain_head = NULL;
+static struct Chain *lines_chain_head = NULL;
 
 typedef struct {
   char *key;
@@ -53,3 +53,4 @@ LineStruct get_line_struct(char *);
 PackageSchema parse(char *);
 char *get_line(struct Chain *);
 struct Chain *create_content_chain(char *);
+void feed_schema(PackageSchema *, char *);

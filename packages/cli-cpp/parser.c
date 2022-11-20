@@ -53,6 +53,56 @@ LineStruct get_line_struct(char *line) {
   return line_struct;
 }
 
+void feed_schema(PackageSchema *psch, char *line) {
+  LineStruct ls = get_line_struct(line);
+
+  if (ls.value) {
+    if (strcmp(ls.key, "NAME") == 0) {
+      psch->name = ls.value;
+    }
+
+    if (strcmp(ls.key, "LICENSE") == 0) {
+      psch->license = ls.value;
+    }
+
+    if (strcmp(ls.key, "DESCRIPTION") == 0) {
+      psch->description = ls.value;
+    }
+
+    if (strcmp(ls.key, "REPOSITORY") == 0) {
+      psch->repository = ls.value;
+    }
+
+    if (strcmp(ls.key, "SOURCE") == 0) {
+      psch->source = ls.value;
+    }
+
+    if (strcmp(ls.key, "BIN") == 0) {
+      psch->bin = ls.value;
+    }
+
+    if (strcmp(ls.key, "KEYWORDS") == 0) {
+      // TODO
+    }
+
+    if (strcmp(ls.key, "VERSION") == 0) {
+      psch->version = ls.value;
+    }
+
+    if (strcmp(ls.key, "DEPENDENCIES") == 0) {
+      // TODO
+    }
+
+    if (strcmp(ls.key, "DEV_DEPENDENCIES") == 0) {
+      // TODO
+    }
+
+    if (strcmp(ls.key, "AUTHOR") == 0) {
+      // TODO
+    }
+  }
+}
+
 PackageSchema parse(char *path) {
   PackageSchema psch;
   char *content = get_file_content(path);
@@ -61,35 +111,20 @@ PackageSchema parse(char *path) {
   if (content_chain_head != NULL) {
     bool first_iterate = true;
     char *line;
-    LineStruct line_struct;
 
     do {
       line = get_line(content_chain_head);
-      // line_struct = get_line_struct(line);
 
       if (line != NULL) {
-        puts(line);
+        feed_schema(&psch, line);
       }
-      // printf("%s -> %s\n", line_struct.key, line_struct.value);
 
       if (first_iterate) {
         content_chain_head = NULL;
         first_iterate = false;
       }
     } while (line != NULL);
-
-    // psch.name = line_struct.value;
   }
 
   return psch;
-}
-
-int main(int argc, char **argv) {
-  if (argc > 1) {
-    PackageSchema psch = parse(argv[1]);
-
-    // puts(psch.name);
-  }
-
-  return 0;
 }
