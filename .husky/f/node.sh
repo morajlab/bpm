@@ -1,7 +1,5 @@
 #!/bin/sh
 
-log=$(bpm import log)
-
 root_path=$(realpath $(dirname $(dirname $(dirname "$0"))))
 
 if [ "$MJL_MONOREPO" = "1" ]; then
@@ -10,11 +8,8 @@ if [ "$MJL_MONOREPO" = "1" ]; then
 
   while ! $is_root; do
     if [ $current_path = / ]; then
-      $log error "$(cat <<- 'EOF'
-This repository is not in a monorepo workspace.
-Please don't set 'MJL_MONOREPO' environment variable.
-EOF
-)"
+      echo 'ERROR:: This repository is not in a monorepo workspace.'
+      echo "Please don't set 'MJL_MONOREPO' environment variable."
       exit 1
     fi
 
@@ -30,6 +25,6 @@ fi
 node_path=$root_path/node_modules
 
 if [ ! -d $node_path ]; then
-  $log error "path '$node_path' doesn't exist."
+  echo "ERROR:: path '$node_path' doesn't exist."
   exit 1
 fi
