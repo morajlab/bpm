@@ -53,58 +53,22 @@ LineStruct get_line_struct(char *line) {
   return line_struct;
 }
 
-void feed_schema(PackageSchema *psch, char *line) {
+void feed_schema(char *line) {
   LineStruct ls = get_line_struct(line);
 
   if (ls.value) {
-    if (strcmp(ls.key, "NAME") == 0) {
-      psch->name = ls.value;
-    }
+    for (int i = 0; i < PACKAGE_SCHEMA_SIZE; i++) {
+      if (strcmp(ls.key, PSCH[i].name) == 0) {
+        PSCH[i].setter(&PSCH[i].value, ls.value);
 
-    if (strcmp(ls.key, "LICENSE") == 0) {
-      psch->license = ls.value;
-    }
-
-    if (strcmp(ls.key, "DESCRIPTION") == 0) {
-      psch->description = ls.value;
-    }
-
-    if (strcmp(ls.key, "REPOSITORY") == 0) {
-      psch->repository = ls.value;
-    }
-
-    if (strcmp(ls.key, "SOURCE") == 0) {
-      psch->source = ls.value;
-    }
-
-    if (strcmp(ls.key, "BIN") == 0) {
-      psch->bin = ls.value;
-    }
-
-    if (strcmp(ls.key, "KEYWORDS") == 0) {
-      // TODO
-    }
-
-    if (strcmp(ls.key, "VERSION") == 0) {
-      psch->version = ls.value;
-    }
-
-    if (strcmp(ls.key, "DEPENDENCIES") == 0) {
-      // TODO
-    }
-
-    if (strcmp(ls.key, "DEV_DEPENDENCIES") == 0) {
-      // TODO
-    }
-
-    if (strcmp(ls.key, "AUTHOR") == 0) {
-      // TODO
+        break;
+      }
     }
   }
 }
 
-PackageSchema parse(char *path) {
-  PackageSchema psch;
+void parse(SchemaItem *psch, char *path) {
+  PSCH = psch;
   char *content = get_file_content(path);
   struct Chain *content_chain_head = create_content_chain(content);
 
@@ -116,7 +80,7 @@ PackageSchema parse(char *path) {
       line = get_line(content_chain_head);
 
       if (line != NULL) {
-        feed_schema(&psch, line);
+        feed_schema(line);
       }
 
       if (first_iterate) {
@@ -125,6 +89,4 @@ PackageSchema parse(char *path) {
       }
     } while (line != NULL);
   }
-
-  return psch;
 }

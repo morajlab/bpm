@@ -410,3 +410,6 @@ build-iPhoneSimulator/
 
 # bpm
 bash_modules/
+
+# GDB
+.gdb_history
