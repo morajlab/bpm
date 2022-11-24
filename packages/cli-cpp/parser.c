@@ -53,13 +53,17 @@ LineStruct get_line_struct(char *line) {
   return line_struct;
 }
 
-void feed_schema(char *line) {
+void feed_schema(Error *error, char *line) {
   LineStruct ls = get_line_struct(line);
 
   if (ls.value) {
     for (int i = 0; i < PACKAGE_SCHEMA_SIZE; i++) {
       if (strcmp(ls.key, PSCH[i].name) == 0) {
-        PSCH[i].setter(&PSCH[i].value, ls.value);
+        validate(error, &PSCH[i], ls.value);
+
+        if (error->message == NULL) {
+          PSCH[i].setter(&PSCH[i].value, ls.value);
+        }
 
         break;
       }
@@ -67,8 +71,13 @@ void feed_schema(char *line) {
   }
 }
 
-void parse(SchemaItem *psch, char *path) {
+void validate(Error *error, SchemaItem *pschi, char *value) {
+  pschi->vfn(error, value);
+}
+
+Error parse(SchemaItem *psch, char *path) {
   PSCH = psch;
+  Error pe = { NULL, 0 };
   char *content = get_file_content(path);
   struct Chain *content_chain_head = create_content_chain(content);
 
@@ -80,7 +89,11 @@ void parse(SchemaItem *psch, char *path) {
       line = get_line(content_chain_head);
 
       if (line != NULL) {
-        feed_schema(line);
+        feed_schema(&pe, line);
+
+        if (pe.message != NULL) {
+          break;
+        }
       }
 
       if (first_iterate) {
@@ -89,4 +102,6 @@ void parse(SchemaItem *psch, char *path) {
       }
     } while (line != NULL);
   }
+
+  return pe;
 }

@@ -14,7 +14,8 @@ typedef struct {
 } LineStruct;
 
 LineStruct get_line_struct(char *);
-void parse(SchemaItem *,char *);
+Error parse(SchemaItem *,char *);
 char *get_line(struct Chain *);
 struct Chain *create_content_chain(char *);
-void feed_schema(char *);
+void feed_schema(Error *, char *);
+void validate(Error *, SchemaItem *, char *);
