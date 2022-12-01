@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 enum ScopeType {
   GLOBAL,
@@ -33,4 +34,4 @@ struct MainCommands {
   cmdcallbackfunc callback_func;
 };
 
-cmdcallbackfunc getCommandFunction(char *);
+cmdcallbackfunc get_cmd_fn(char *);

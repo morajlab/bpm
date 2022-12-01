@@ -1,7 +1,7 @@
 #include "cli.h"
 
 int install(int argc, char **argv) {
-  printf("install() method\n");
+  bool global = false;
 
   while (argc--) {
     printf("%s\n", argv[argc]);
@@ -16,7 +16,7 @@ int defaultCommand(int argc, char **argv) {
   return 0;
 }
 
-cmdcallbackfunc getCommandFunction(char *command) {
+cmdcallbackfunc get_cmd_fn(char *command) {
   struct MainCommands commands_list[COMMANDS_LIST_SIZE] = COMMANDS_LIST;
   cmdcallbackfunc cmd_func = &defaultCommand;
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  cmdcallbackfunc cmd_func = getCommandFunction(argv[1]);
+  cmdcallbackfunc cmd_func = get_cmd_fn(argv[1]);
 
   return (*cmd_func)(argc, argv);
 }

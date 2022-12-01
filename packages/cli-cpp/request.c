@@ -32,6 +32,7 @@
 #include <string.h>
 
 #include <curl/curl.h>
+#include "request.h"
 
 struct MemoryStruct {
   char *memory;
@@ -59,7 +60,8 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
-int main(void)
+char *
+request(char *url)
 {
   CURL *curl_handle;
   CURLcode res;
@@ -75,7 +77,7 @@ int main(void)
   curl_handle = curl_easy_init();
 
   /* specify URL to get */
-  curl_easy_setopt(curl_handle, CURLOPT_URL, "https://www.example.com/");
+  curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 
   /* send all data to this function  */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -91,19 +93,13 @@ int main(void)
   res = curl_easy_perform(curl_handle);
 
   /* check for errors */
-  if(res != CURLE_OK) {
-    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-            curl_easy_strerror(res));
-  }
-  else {
-    /*
-     * Now, our chunk.memory points to a memory block that is chunk.size
-     * bytes big and contains the remote file.
-     *
-     * Do something nice with it!
-     */
+  if(res == CURLE_OK) {
+    long response_code;
+    curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &response_code);
 
-    printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
+    if (response_code != 404) {
+      return chunk.memory;
+    }
   }
 
   /* cleanup curl stuff */
@@ -114,5 +110,5 @@ int main(void)
   /* we are done with libcurl, so clean it up */
   curl_global_cleanup();
 
-  return 0;
+  return NULL;
 }
