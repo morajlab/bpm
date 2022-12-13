@@ -3,8 +3,34 @@
 int install(int argc, char **argv) {
   bool global = false;
 
-  while (argc--) {
-    printf("%s\n", argv[argc]);
+  /* TODO: process arguments */
+  for (int i = 2; i < argc; i++) {
+    if (strcmp(argv[i], "--global") == 0) {
+      global = true;
+    }
+  }
+
+  char *package = request(argv[2]);
+  /* TODO: process arguments */
+
+  if (package == NULL) {
+    printf(">> ERROR:: package '%s' not found !", argv[2]);
+
+    return 1;
+  }
+
+  SchemaItem psch[] = PACKAGE_SCHEMA;
+
+  Error er = parse(psch, package);
+
+  if (er.message != NULL) {
+    printf("message: %s\nid: %i\n", er.message, er.id);
+
+    return 1;
+  }
+
+  for (int i = 0; i < PACKAGE_SCHEMA_SIZE; i++) {
+    printf("name: %s\nvalue: %s\n-----------\n", psch[i].name, psch[i].value);
   }
 
   return 0;

@@ -75,10 +75,9 @@ void validate(Error *error, SchemaItem *pschi, char *value) {
   pschi->vfn(error, value);
 }
 
-Error parse(SchemaItem *psch, char *path) {
+Error parse(SchemaItem *psch, char *content) {
   PSCH = psch;
   Error pe = { NULL, 0 };
-  char *content = get_file_content(path);
   struct Chain *content_chain_head = create_content_chain(content);
 
   if (content_chain_head != NULL) {

@@ -1,6 +1,7 @@
 #include "schema.h"
 #include <string.h>
 
+// Verifier functions
 void name_vfn(Error *error, void *value) {}
 void license_vfn(Error *error, void *value) {}
 void repository_vfn(Error *error, void *value) {}
@@ -13,6 +14,7 @@ void devdependencies_vfn(Error *error, void *value) {}
 void author_vfn(Error *error, void *value) {}
 void description_vfn(Error *error, void *value) {}
 
+// Setter functions
 void name_setter(void *value, char *new_value) {
   strcpy(value, &new_value);
 }

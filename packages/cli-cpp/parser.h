@@ -1,7 +1,6 @@
 #include <string.h>
 #include "schema.h"
 #include "libmjl-cpp/src/create_chain/create_chain.h"
-#include "libmjl-cpp/src/get_file_content/get_file_content.h"
 
 #define KEY_VALUE_TOKEN "="
 

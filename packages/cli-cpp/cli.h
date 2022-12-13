@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "request.h"
+#include "parser.h"
+
 enum ScopeType {
   GLOBAL,
   LOCAL
