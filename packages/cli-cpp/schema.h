@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdbool.h>
+#include "promise.h"
 
 #define S_NAME_I { \
                   "NAME", \
@@ -83,12 +84,7 @@
                        }
 #define PACKAGE_SCHEMA_SIZE 11
 
-typedef struct {
-  char *message;
-  int id;
-} Error;
-
-typedef void(*validator_fn)(Error *, void *);
+typedef void(*validator_fn)(Promise *, void *);
 typedef void(*setter_fn)(void *, char *);
 
 typedef struct {
@@ -99,17 +95,17 @@ typedef struct {
 } SchemaItem;
 
 // Verifier functions
-void name_vfn(Error *, void *);
-void description_vfn(Error *, void *);
-void license_vfn(Error *, void *);
-void repository_vfn(Error *, void *);
-void source_vfn(Error *, void *);
-void bin_vfn(Error *, void *);
-void version_vfn(Error *, void *);
-void keywords_vfn(Error *, void *);
-void dependencies_vfn(Error *, void *);
-void devdependencies_vfn(Error *, void *);
-void author_vfn(Error *, void *);
+void name_vfn(Promise *, void *);
+void description_vfn(Promise *, void *);
+void license_vfn(Promise *, void *);
+void repository_vfn(Promise *, void *);
+void source_vfn(Promise *, void *);
+void bin_vfn(Promise *, void *);
+void version_vfn(Promise *, void *);
+void keywords_vfn(Promise *, void *);
+void dependencies_vfn(Promise *, void *);
+void devdependencies_vfn(Promise *, void *);
+void author_vfn(Promise *, void *);
 
 // Setter functions
 void name_setter(void *, char *);

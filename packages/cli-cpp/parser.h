@@ -1,5 +1,6 @@
 #include <string.h>
 #include "schema.h"
+#include "promise.h"
 #include "libmjl-cpp/src/create_chain/create_chain.h"
 
 #define KEY_VALUE_TOKEN "="
@@ -13,8 +14,8 @@ typedef struct {
 } LineStruct;
 
 LineStruct get_line_struct(char *);
-Error parse(SchemaItem *,char *);
+Promise parse(SchemaItem *,char *);
 char *get_line(struct Chain *);
 struct Chain *create_content_chain(char *);
-void feed_schema(Error *, char *);
-void validate(Error *, SchemaItem *, char *);
+void feed_schema(Promise *, char *);
+void validate(Promise *, SchemaItem *, char *);

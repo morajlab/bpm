@@ -29,6 +29,7 @@ int defaultCommand(int, char **);
                         } \
                       }
 
+char* get_pkg_url(char*);
 
 typedef int(*cmdcallbackfunc)(int, char **);
 

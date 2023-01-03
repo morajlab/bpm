@@ -53,15 +53,15 @@ LineStruct get_line_struct(char *line) {
   return line_struct;
 }
 
-void feed_schema(Error *error, char *line) {
+void feed_schema(Promise* prm, char *line) {
   LineStruct ls = get_line_struct(line);
 
   if (ls.value) {
     for (int i = 0; i < PACKAGE_SCHEMA_SIZE; i++) {
       if (strcmp(ls.key, PSCH[i].name) == 0) {
-        validate(error, &PSCH[i], ls.value);
+        validate(prm, &PSCH[i], ls.value);
 
-        if (error->message == NULL) {
+        if (prm->message == NULL) {
           PSCH[i].setter(&PSCH[i].value, ls.value);
         }
 
@@ -71,13 +71,13 @@ void feed_schema(Error *error, char *line) {
   }
 }
 
-void validate(Error *error, SchemaItem *pschi, char *value) {
-  pschi->vfn(error, value);
+void validate(Promise* prm, SchemaItem *pschi, char *value) {
+  pschi->vfn(prm, value);
 }
 
-Error parse(SchemaItem *psch, char *content) {
+Promise parse(SchemaItem *psch, char *content) {
   PSCH = psch;
-  Error pe = { NULL, 0 };
+  Promise pe = { NULL, 0 };
   struct Chain *content_chain_head = create_content_chain(content);
 
   if (content_chain_head != NULL) {

@@ -2,17 +2,17 @@
 #include <string.h>
 
 // Verifier functions
-void name_vfn(Error *error, void *value) {}
-void license_vfn(Error *error, void *value) {}
-void repository_vfn(Error *error, void *value) {}
-void source_vfn(Error *error, void *value) {}
-void bin_vfn(Error *error, void *value) {}
-void version_vfn(Error *error, void *value) {}
-void keywords_vfn(Error *error, void *value) {}
-void dependencies_vfn(Error *error, void *value) {}
-void devdependencies_vfn(Error *error, void *value) {}
-void author_vfn(Error *error, void *value) {}
-void description_vfn(Error *error, void *value) {}
+void name_vfn(Promise *prm, void *value) {}
+void license_vfn(Promise *prm, void *value) {}
+void repository_vfn(Promise *prm, void *value) {}
+void source_vfn(Promise *prm, void *value) {}
+void bin_vfn(Promise *prm, void *value) {}
+void version_vfn(Promise *prm, void *value) {}
+void keywords_vfn(Promise *prm, void *value) {}
+void dependencies_vfn(Promise *prm, void *value) {}
+void devdependencies_vfn(Promise *prm, void *value) {}
+void author_vfn(Promise *prm, void *value) {}
+void description_vfn(Promise *prm, void *value) {}
 
 // Setter functions
 void name_setter(void *value, char *new_value) {

@@ -1,5 +1,9 @@
 #include "cli.h"
 
+char* get_pkg_url(char* url) {
+  return "https://raw.githubusercontent.com/morajlab/bpm/master/package.sh";
+}
+
 int install(int argc, char **argv) {
   bool global = false;
 
@@ -10,7 +14,7 @@ int install(int argc, char **argv) {
     }
   }
 
-  char *package = request(argv[2]);
+  char *package = request(get_pkg_url(argv[2]));
   /* TODO: process arguments */
 
   if (package == NULL) {
