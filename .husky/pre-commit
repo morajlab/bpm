@@ -8,7 +8,6 @@ BRANCH=$(git branch --show-current)
 
 VERIFICATION_FILE=$TEMPLATE_PATH/$BRANCH/verify.sh
 
-. "$HUSKY_ROOT_PATH/_/husky.sh"
 . "$HUSKY_ROOT_PATH/f/node.sh"
 
 $node_path/.bin/lint-staged --allow-empty

@@ -2,7 +2,6 @@
 
 HUSKY_ROOT_PATH=$(dirname "$0")
 
-. "$HUSKY_ROOT_PATH/_/husky.sh"
 . "$HUSKY_ROOT_PATH/f/node.sh"
 
 $node_path/.bin/commitlint --edit $1

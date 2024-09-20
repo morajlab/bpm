@@ -3,6 +3,9 @@
   "version": "0.0.1-alpha",
   "description": "bash package manager",
   "private": true,
+  "scripts": {
+    "postinstall": "npx husky"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/morajlab/bpm.git"
@@ -21,10 +24,10 @@
     "**/*": "prettier -w -u"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.2",
-    "@commitlint/config-conventional": "^17.0.2",
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.1",
-    "prettier": "^2.7.0"
+    "@commitlint/cli": "latest",
+    "@commitlint/config-conventional": "latest",
+    "husky": "latest",
+    "lint-staged": "latest",
+    "prettier": "latest"
   }
 }
